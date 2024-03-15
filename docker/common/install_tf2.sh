@@ -1,5 +1,5 @@
-#!/bin/bash                                                                                                                                                                     
-  
+#!/bin/bash
+
 set -ex
 sudo chmod 777 /scratch
 if [[ ${VAI_CONDA_CHANNEL} =~ .*"tar.gz" ]]; then \
@@ -8,7 +8,7 @@ if [[ ${VAI_CONDA_CHANNEL} =~ .*"tar.gz" ]]; then \
        tar -xzvf conda-channel.tar.gz; \
        export VAI_CONDA_CHANNEL=file:///scratch/conda-channel; \
 fi;
-sudo mkdir -p $VAI_ROOT/compiler 
+sudo mkdir -p $VAI_ROOT/compiler
 
 if [[ ${DOCKER_TYPE} != 'cpu' ]]; then \
     arch_type="_${DOCKER_TYPE}";
@@ -35,6 +35,7 @@ if [[ ${DOCKER_TYPE} == 'cpu' ]]; then
     && cat ~/.condarc \
     && mamba env create -f /scratch/${DOCKER_TYPE}_conda/vitis-ai-tensorflow2.yml \
     && conda activate vitis-ai-tensorflow2 \
+    && conda clean -a \
     && mamba install --no-update-deps  vai_q_tensorflow2 pydot pyyaml jupyter ipywidgets \
             dill progressbar2 pytest pandas matplotlib \
              -c ${VAI_CONDA_CHANNEL} -c conda-forge \
@@ -49,7 +50,7 @@ if [[ ${DOCKER_TYPE} == 'cpu' ]]; then
     && conda clean -y --force-pkgs-dirs \
     && sudo cp -r $CONDA_PREFIX/lib/python3.8/site-packages/vaic/arch $VAI_ROOT/compiler/arch \
     && rm -fr ~/.cache  \
-    && sudo rm -fr /scratch/* 
+    && sudo rm -fr /scratch/*
 elif [[ ${DOCKER_TYPE} == 'rocm' ]]; then
   . $VAI_ROOT/conda/etc/profile.d/conda.sh \
     && mkdir -p $VAI_ROOT/conda/pkgs \
@@ -59,6 +60,7 @@ elif [[ ${DOCKER_TYPE} == 'rocm' ]]; then
     && conda config --remove channels defaults || true \
     && mamba env create -f /scratch/${DOCKER_TYPE}_conda/vitis-ai-tensorflow2.yml \
     && conda activate vitis-ai-tensorflow2 \
+    && conda clean -a \
     && mamba install /scratch/conda-channel/linux-64/tensorflow-onnx-3.5.0-hcdf1d9b_18.tar.bz2 \
     && mamba install --no-update-deps -y  pydot pyyaml jupyter ipywidgets \
             dill progressbar2 pytest scikit-learn pandas matplotlib \
@@ -87,6 +89,7 @@ else
     && mamba env create -f /scratch/${DOCKER_TYPE}_conda/vitis-ai-tensorflow2.yml \
     && conda activate vitis-ai-tensorflow2 \
     && pip install --ignore-installed ${tensorflow_ver} \
+    && conda clean -a \
     && mamba install --no-update-deps -y  pydot pyyaml jupyter ipywidgets \
             dill progressbar2 pytest pandas matplotlib \
             pillow -c ${conda_channel} -c conda-forge -c defaults \
